@@ -1,15 +1,29 @@
 {
 	"folders": [
 		{
-			"path": "."
+			"name": "Zephyr",
+			"path": "zephyr"
+		},
+		{
+			"name": "Modules",
+			"path": "modules"
+		},
+		{
+			"name": "BootLoader",
+			"path": "bootloader"
 		}
+
 	],
 	"settings": {
 		// Modify these to match installation paths
-		"zephyr.zephyr_base": "${userHome}/zephyrproject/zephyr",
-		"zephyr.modules_base": "${config:zephyr.zephyr_base}/../modules",
-		"zephyr.zephyr_sdk_install_dir": "${userHome}/zephyr-sdk-0.16.5-1",
-		"infineon.openocd_base": "/opt/Tools/ModusToolbox/tools_3.2/openocd",
+		"zephyr.zephyr_base": "${workspaceFolder:Zephyr}",
+		"zephyr.modules_base": "${workspaceFolder:Modules}",
+		"zephyr.zephyr_sdk_install_dir": "/home/<USERNAME>/zephyr-sdk-0.17.0",
+		"infineon.openocd_base": "/opt/Tools/ModusToolboxProgtools-1.4/openocd",
+		"zephyr.default_board": "cyw920829m2evk_02",
+		"zephyr.default_app": "samples/basic/blinky",
+		"python.defaultInterpreterPath": "${workspaceFolder:Zephyr}/../../.venv/bin/python",
+		"python.terminal.activateEnvironment": true,
 
 		"cortex-debug.armToolchainPath": "${config:zephyr.zephyr_sdk_install_dir}/arm-zephyr-eabi/bin",
 		"cortex-debug.gdbPath": "${config:cortex-debug.armToolchainPath}/arm-zephyr-eabi-gdb",
@@ -20,11 +34,22 @@
 
 		// IntelliSense
 		"C_Cpp.default.compilerPath": "${config:cortex-debug.armToolchainPath}/arm-zephyr-eabi-gcc",
-		"C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
+		"C_Cpp.default.compileCommands": "${workspaceFolder:Zephyr}/build/compile_commands.json",
 
 		// File Associations
-		"files.associations": {
-		},
+		"files.associations": {},
+
+		//Formatting Configuration
+		"editor.formatOnSave": true,
+		"editor.formatOnSaveMode": "modifications",
+		"editor.formatOnType": true,
+		"editor.formatOnPaste": true,
+		"C_Cpp.clang_format_style": "file:/home/<USERNAME>/zephyr/upstream/zephyr/.clang-format",
+
+		//Editor Configuration
+		"editor.rulers": [
+			100
+		],
 	},
 	"tasks": {
 		"version": "2.0.0",
@@ -42,7 +67,8 @@
 					"-p",
 					"auto",
 					"-b",
-					"cyw920829m2evk_02"
+					"${config:zephyr.default_board}",
+					"${config:zephyr.default_app}",
 				],
 				"problemMatcher": [
 					"$gcc"
@@ -60,7 +86,8 @@
 					"-p",
 					"${input:pristine}",
 					"-b",
-					"${input:board}"
+					"${input:board}",
+					"${input:app}",
 				],
 				"problemMatcher": [
 					"$gcc"
@@ -118,9 +145,18 @@
 		"inputs": [
 			{
 				"id": "board",
-				"type": "promptString",
+				"type": "pickString",
 				"default": "cyw920829m2evk_02",
-				"description": "Choose target board"
+				"description": "Choose target board",
+				"options": [
+					"cyw920829m2evk_02",
+					"cy8ckit_062s2_ai",
+					"cy8ckit_062s4",
+					"cy8cproto_062_4343w",
+					"cy8cproto_063_ble",
+					"xmc45_relax_kit",
+					"xmc47_relax_kit",
+				]
 			},
 			{
 				"id": "pristine",
@@ -132,7 +168,19 @@
 					"always",
 					"never"
 				]
-			}
+			},
+			{
+				"id": "app",
+				"type": "pickString",
+				"default": "samples/hello_world",
+				"description": "Choose which application to build",
+				"options": [
+					"samples/hello_world",
+					"samples/basic/blinky",
+					"samples/basic/fade_led",
+					"samples/basic/blinky_pwm",
+				]
+			},
 		]
 	},
 	"launch": {
@@ -140,7 +188,7 @@
 		"configurations": [
 			{
 				"name": "Launch CYW20829 CM33 (KitProg3_MiniProg4)",
-				"cwd": "${workspaceFolder}",
+				"cwd": "${workspaceFolder:Zephyr}",
 				"executable": "build/zephyr/zephyr.elf",
 				"request": "launch",
 				"type": "cortex-debug",
@@ -149,7 +197,6 @@
 				"preLaunchTask": "West Build and Flash",
 				"rtos": "auto",
 				"searchDir": [
-					"${config:zephyr.zephyr_base}/boards/infineon/cyw920829m2evk_02/support/",
 					"${config:infineon.openocd_base}/scripts/",
 				],
 				"openOCDPreConfigLaunchCommands": [
@@ -174,11 +221,11 @@
 				// svdFile is optional, it can be very large.
 				"svdFile": "${config:zephyr.modules_base}/hal/infineon/mtb-pdl-cat1/devices/COMPONENT_CAT1B/svd/cyw20829.svd",
 				"breakAfterReset": true,
-				"showDevDebugOutput": "none"
+				"showDevDebugOutput": "none",
 			},
 			{
 				"name": "Attach CYW20829 CM33 (KitProg3_MiniProg4)",
-				"cwd": "${workspaceFolder}",
+				"cwd": "${workspaceFolder:Zephyr}",
 				"executable": "build/zephyr/zephyr.elf",
 				"request": "attach",
 				"type": "cortex-debug",
@@ -222,7 +269,6 @@
 			"ms-vscode.vscode-embedded-tools",
 			"ms-vscode.vscode-serial-monitor",
 			"marus25.cortex-debug",
-			"donjayamanne.python-environment-manager"
 		]
 	}
 }
